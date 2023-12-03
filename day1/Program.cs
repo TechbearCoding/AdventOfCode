@@ -1,39 +1,60 @@
 ﻿
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading;
 
 namespace Day1
 {
     public class Program
     {
-        private static String[] numbers = {
-            "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+        static Dictionary<string, char> numberWords = new Dictionary<string, char>()
+    {
+        {"one", '1'}, {"two", '2'}, {"three", '3'}, {"four", '4'},
+        {"five", '5'}, {"six", '6'}, {"seven", '7'}, {"eight", '8'}, {"nine", '9'}
+    };
+
         static void Main(string[] args)
         {
-            List<int> fileList = ReadFile();
-            int res = fileList.Sum(i => i);
+            int res = ReadFile();
+            //int res = fileList.Sum(i => i);
             Console.WriteLine(res);
 
         }
 
-        private static List<int> ReadFile()
+        private static int ReadFile()
         {
+            int counter = 0;
             List<int> valueList = new List<int>();
             try
             {
                 String desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                String fullName = Path.Combine(desktopPath, "b.txt");
+                String fullName = Path.Combine(desktopPath, "a.txt");
 
                 StreamReader sr = new StreamReader(fullName);
 
-                String line = sr.ReadLine();
-
-                while (line != null)
+                var lines = File.ReadAllLines(fullName);
+                foreach (var line in lines)
                 {
-                    int value = HandleLine(line); 
-                    valueList.Add(value);   
-                    line = sr.ReadLine();
+                    var cleanLine = line
+                        .Replace("one", "o1e")
+                        .Replace("two", "t2o")
+                        .Replace("three", "t3e")
+                        .Replace("four", "f4r")
+                        .Replace("five", "f5e")
+                        .Replace("six", "s6x")
+                        .Replace("seven", "s7n")
+                        .Replace("eight", "e8t")
+                        .Replace("nine", "n9e");
+
+                    var firstNumber = cleanLine.First(Char.IsDigit);
+
+                    var lastNumber = cleanLine.Last(Char.IsDigit);
+
+                    var combinedNumber = firstNumber.ToString() + lastNumber.ToString();
+
+                    counter += int.Parse(combinedNumber);
                 }
+
 
             }
             catch (Exception ex)
@@ -43,128 +64,10 @@ namespace Day1
                 Console.WriteLine(ex.StackTrace);
             }
 
-            return valueList;
+            return counter;
 
         }
 
-        private static int HandleLine(String line)
-        {
-            int result = 0;
-            String first = "null";
-            String last = "null";
-            int posF = 0;
-            int posL = 0;
-
-            for(int i=0; i<line.Length; i++)
-            {
-                if (Char.IsDigit(line[i]))
-                {
-                    if(first == "null")
-                    {
-                        first = Convert.ToString(line[i]);
-                        posF = i;
-                    }
-                    else
-                    {
-                        last = Convert.ToString(line[i]);
-                        posL = i;
-                    }
-                }
-                
-            }
-            if(last == "null")
-            {
-                last = first;
-                posL = posF;
-            }
-
-            
-            List<String> wordsInLine = new List<String>();
-            List<int> ind = new List<int>();
-
-
-            foreach (String w in numbers)
-            {
-                AllIndexesOf(line, w, ind, wordsInLine);
-            }
-
-            if (ind.Count > 0)
-            {
-                if (posF > ind[0])
-                {
-                    first = GetNumber(wordsInLine[0]);
-                }
-
-                for (int i = 0; i < ind.Count; i++)
-                {
-                    if (posL < ind[i])
-                    {
-                        last = GetNumber(wordsInLine[i]);
-                    }
-                }
-            }
-
-
-            if (last == "null")
-            {
-                last = first;
-            }
-            try
-            {
-
-                result = Convert.ToInt32(first + last);
-                return result;
-
-            }
-
-            catch (Exception e)
-            {
-                Console.WriteLine("Debug");
-
-                for (int i = 0; i < ind.Count; i++)
-                {
-                    Console.Write(wordsInLine[i] + " ");
-
-                }
-            }
-
-            return 0;
-
-        }
-
-        public static void AllIndexesOf(string str, string value, List<int> indexes, List<String> words)
-        {
-            if (String.IsNullOrEmpty(value))
-                throw new ArgumentException("the string to find may not be empty", "value");
-            
-            for (int index = 0; ; index += value.Length)
-            {
-                index = str.IndexOf(value, index);
-                if (index == -1)
-                    return;
-                indexes.Add(index);
-                words.Add(value);
-
-
-            }
-        }
-
-        private static String GetNumber(string str)
-        {
-            switch(str)
-            {
-                case "one": return "1";
-                case "two": return "2";
-                case "three": return "3";
-                case "four": return "4";
-                case "five": return "5";
-                case "six": return "6";
-                case "seven": return "7";
-                case "eight": return "8";
-                case "nine": return "9";
-                default: return "0";
-
-            }
-        }
+     
     }
 }
